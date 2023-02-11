@@ -1,0 +1,2 @@
+SQLAlchemy~=1.4.46
+selenium~=4.7.2
