@@ -1,0 +1,5 @@
+class GooglePlayConfig:
+    MAX_RATE_VALUE: int = 5
+
+    DOWNLOAD_THRESHOLD = 500
+    REVIEW_SCORE_THRESHOLD = 8

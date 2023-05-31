@@ -77,52 +77,90 @@ class SeleniumServices:
 
         isApp = True
 
-        try:
-            temp = self.driver.find_element(By.XPATH,
-                                            "/html/body/c-wiz[3]/div/div/div[1]/div[2]/div/div[1]/c-wiz[2]/div/section/header/div/div[1]/h2")
+        # Es el contenido de la sección de "Información de la app"
+        h2 = [
+            "/html/body/c-wiz[3]/div/div/div[1]/div[2]/div/div[1]/c-wiz[2]/div/section/header/div/div[1]/h2",
+            "/html/body/c-wiz[2]/div/div/div[1]/div[2]/div/div[1]/c-wiz[2]/div/section/header/div/div[1]/h2",
+            "/html/body/c-wiz[2]/div/div/div[1]/div[2]/div/div[1]/div[1]/c-wiz[2]/div/section/header/div/div[1]/h2"
+        ]
 
-            isApp = "aplicación" in str(temp.text).strip().lower()
-
-
-        except Exception as e:
+        for i in h2:
             try:
-                temp = self.driver.find_element(By.XPATH,
-                                                "/html/body/c-wiz[2]/div/div/div[1]/div[2]/div/div[1]/c-wiz[2]/div/section/header/div/div[1]/h2")
+                temp = self.driver.find_element(By.XPATH, i)
 
                 isApp = "aplicación" in str(temp.text).strip().lower()
 
-            except Exception as j:
-                print("Algo ha fallado")
+
+            except Exception as e:
+                pass
 
         categories = []
 
         try:
-
             if getCategories is True:
+
+                # Es el contenedor del listado de categorías
+                catXpaths = [
+                    "/html/body/c-wiz[2]/div/div/div[1]/div[2]/div/div[1]/div[1]/c-wiz[2]/div/section/div/div[3]",
+                    "/html/body/c-wiz[2]/div/div/div[1]/div[2]/div/div[1]/c-wiz[2]/div/section/div/div[3]"
+                ]
+
+                for i in catXpaths:
+                    try:
+                        categoriesContainer = self.driver.find_element(By.XPATH, i)
+                        if categoriesContainer is not None:
+                            categories = [item.get_attribute("href") for item in
+                                          categoriesContainer.find_elements(By.TAG_NAME, "a")]
+
+                    except Exception as e:
+                        pass
+
+            infoButtons = [
+                "/html/body/c-wiz[2]/div/div/div[1]/div[2]/div/div[1]/div[1]/c-wiz[2]/div/section/header/div/div[2]/button",
+                "/html/body/c-wiz[2]/div/div/div[1]/div[2]/div/div[1]/c-wiz[2]/div/section/header/div/div[2]/button"
+            ]
+
+            for i in infoButtons:
                 try:
-                    categoriesContainer = self.driver.find_element(By.XPATH,
-                                                                   "/html/body/c-wiz[2]/div/div/div[1]/div[2]/div/div[1]/c-wiz[2]/div/section/div/div[3]")
-                    if categoriesContainer is not None:
-                        categories = [item.get_attribute("href") for item in
-                                      categoriesContainer.find_elements(By.TAG_NAME, "a")]
+                    WebDriverWait(self.driver, 5).until(ec.element_to_be_clickable((By.XPATH, i))).click()
+                    break
+                except:
+                    continue
 
-                except Exception as e:
-                    pass
+            closeButtons = [
+                "/html/body/div[4]/div[2]/div/div/div/div/div[1]/button",
+                "/html/body/div[4]/div[2]/div/div/div/div/button"
+            ]
 
-            WebDriverWait(self.driver, 5).until(ec.element_to_be_clickable((By.XPATH,
-                                                                            "/html/body/c-wiz[2]/div/div/div[1]/div[2]/div/div[1]/c-wiz[2]/div/section/header/div/div[2]/button"))).click()
+            closeButton = None
+            for i in closeButtons:
+                try:
+                    closeButton = WebDriverWait(self.driver, 3).until(
+                        ec.element_to_be_clickable((By.XPATH, i)))
+                    break
+                except:
+                    continue
 
-            try:
-                closeButton = WebDriverWait(self.driver, 3).until(
-                    ec.element_to_be_clickable((By.XPATH, "/html/body/div[4]/div[2]/div/div/div/div/div[1]/button")))
-            except:
-                closeButton = WebDriverWait(self.driver, 3).until(
-                    ec.element_to_be_clickable((By.XPATH, "/html/body/div[4]/div[2]/div/div/div/div/button")))
+            if closeButton is None:
+                return None
 
-            try:
-                data = self.driver.find_element(By.XPATH, "/html/body/div[4]/div[2]/div/div/div/div[2]/div[3]")
-            except:
-                data = self.driver.find_element(By.XPATH, "/html/body/div[4]/div[2]/div/div/div/div/div[2]/div[3]")
+            dataContainers = [
+                "/html/body/div[4]/div[2]/div/div/div/div[2]/div[3]",
+                "/html/body/div[4]/div[2]/div/div/div/div/div[2]/div[3]",
+                "/html/body/div[5]/div[2]/div/div/div/div/div[2]/div[3]",
+
+            ]
+
+            data = None
+            for i in dataContainers:
+                try:
+                    data = self.driver.find_element(By.XPATH, i)
+                    break
+                except:
+                    continue
+
+            if data is None:
+                return None
 
             divs = data.find_elements(By.TAG_NAME, "div")
 
@@ -163,6 +201,11 @@ class SeleniumServices:
             except:
                 reviewScore = ""
 
+            if reviewScore != "":
+                reviewScore = FormatServices.parseReviewScore(reviewScore)
+            else:
+                reviewScore = 0.0
+
             isThatPay = False
 
             try:
@@ -173,11 +216,6 @@ class SeleniumServices:
                     isThatPay = True
             except:
                 pass
-
-            if reviewScore != "":
-                reviewScore = FormatServices.parseReviewScore(reviewScore)
-            else:
-                reviewScore = 0.0
 
             # some can be None, check always
             return {"downloads": downloads, "release": release, "review_count": reviewCount,
@@ -225,3 +263,16 @@ class SeleniumServices:
 
     def closeWindow(self):
         self.driver.close()
+
+    def getAppPageUrls(self, urlBase: str):
+        self.driver.set_page_load_timeout(10)
+        self.driver.set_script_timeout(10)
+        self.driver.implicitly_wait(2)
+        try:
+            self.driver.get(urlBase)
+        except Exception as e:
+            print(e)
+            return None
+        links = self._getLinks(self.driver)
+        self.driver.stop_client()
+        return links

@@ -1,30 +1,28 @@
-from datetime import timedelta, datetime
-
-from models.gp_url_base_model import GpUrlBaseModel
-from services.selenium_services import SeleniumServices
+from engines.discover_engine.discover_engine import DiscoverEngine
+from engines.evaluate_engine.evaluate_engine import EvaluateEngine
+import threading
 
 if __name__ == '__main__':
 
-    selServices = SeleniumServices(False)
-    now = datetime.now()
-    dateRequired = int((now - timedelta(days=365)).timestamp() * 1000)
-    downloadRequired = 490000
+    def startDiscoverEngine():
+        """
+        Esta es la funcionalidad base que nos permite descubrir nuevas aplicaciones que se hayan subido a Google play.
+        :return:
+        """
+        DiscoverEngine("es_ES")
+
+
+    def startEvaluateEngine():
+        EvaluateEngine()
+
 
     while True:
-        nextUrl = GpUrlBaseModel.getNextUrlToScan()
-        try:
-            data = selServices.getCategoricalAppData(nextUrl, True)
-            if data is None:
-                continue
+        print("1) Actualizar URLS")
+        print("2) Evaluar nichos")
+        result = input("Ingrese una opción:")
 
-            if data["is_app"] is False:
-                continue
+        if result == "2":
+            threading.Thread(target=startEvaluateEngine()).start()
 
-            if data["release"] > dateRequired and data["downloads"] > downloadRequired:
-                f = open("niches.txt", "a", encoding="UTF8")
-                f.write(nextUrl + "\r\n")
-                f.close()
-                print("Nichos actualizados")
-
-        except:
-            continue
+        else:
+            threading.Thread(target=startDiscoverEngine).start()

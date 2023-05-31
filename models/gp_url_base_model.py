@@ -63,3 +63,12 @@ class GpUrlBaseModel:
             return temp
         except:
             return None
+
+    @staticmethod
+    def delete(appUrl: str):
+        try:
+            getSession().query(GpUrlBase).where(GpUrlBase.url == appUrl).delete()
+            getSession().commit()
+            return True
+        except Exception as e:
+            return None
