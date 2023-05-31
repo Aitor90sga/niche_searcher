@@ -21,10 +21,10 @@ class EvaluateEngine:
                 if data["is_app"] is False:
                     continue
 
-                if data["release"] > AppConfig.dataToEvaluate and data["downloads"] > AppConfig.downloadRequired and data[
-                    "categories"] is not None and len(
-                    data["categories"]) > 0 and 'https://play.google.com/store/apps/category/TOOLS' in data[
-                    "categories"]:
+                if data["release"] > AppConfig.dataToEvaluate and data["downloads"] > AppConfig.downloadRequired and \
+                        data[
+                            "categories"] is not None and len(
+                    data["categories"]) > 0 and True in [a in data["categories"] for a in AppConfig.categoriesRequired]:
                     f = open("niches.txt", "a", encoding="UTF8")
                     f.write(nextUrl + "\r\n")
                     f.close()
