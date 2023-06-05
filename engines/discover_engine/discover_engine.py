@@ -154,14 +154,15 @@ class DiscoverEngine:
                     newLink = GpUrlBaseModel.getNextUrlToSearch()
                     if newLink is None:
                         break
+
                     links = selServices.getAppPageUrls(newLink + self.lang)
 
                     if links is None:
                         continue
 
-                    if len(links) == 1 and links[0] == "https://play.google.com/store":
+                    if len(links) == 1 and "https://play.google.com/store" in links[0]:
                         links = selServices.getAppPageUrls(newLink)
-                        if len(links) == 1 and links[0] == "https://play.google.com/store":
+                        if len(links) == 1 and "https://play.google.com/store" in links[0]:
                             print("Deleting link: " + newLink)
                             GpUrlBaseModel.delete(newLink)
                             continue

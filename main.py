@@ -19,6 +19,7 @@ if __name__ == '__main__':
     while True:
         print("1) Actualizar URLS")
         print("2) Evaluar nichos")
+
         result = input("Ingrese una opción:")
 
         if result == "2":

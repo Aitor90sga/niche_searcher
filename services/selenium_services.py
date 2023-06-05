@@ -21,6 +21,7 @@ class SeleniumServices:
         options.add_argument("--disable-extensions")
         options.add_argument("--disable-gpu")
         options.add_argument("--incognito")
+        options.add_argument("--headless=new")
         # options.add_argument("--lang=" + lang)
 
         if useEdge is True:
@@ -122,10 +123,12 @@ class SeleniumServices:
 
             for i in infoButtons:
                 try:
-                    WebDriverWait(self.driver, 5).until(ec.element_to_be_clickable((By.XPATH, i))).click()
+                    WebDriverWait(self.driver, 1).until(ec.element_to_be_clickable((By.XPATH, i))).click()
                     break
                 except:
                     continue
+
+            time.sleep(200 / 1000)
 
             closeButtons = [
                 "/html/body/div[4]/div[2]/div/div/div/div/div[1]/button",
@@ -135,7 +138,7 @@ class SeleniumServices:
             closeButton = None
             for i in closeButtons:
                 try:
-                    closeButton = WebDriverWait(self.driver, 3).until(
+                    closeButton = WebDriverWait(self.driver, 1).until(
                         ec.element_to_be_clickable((By.XPATH, i)))
                     break
                 except:
@@ -257,9 +260,8 @@ class SeleniumServices:
         return logo
 
     def _getLinks(self, driver):
-        links = driver.find_elements(By.TAG_NAME, "a")
-        sendLinks = [i.get_attribute("href") for i in links]
-        return sendLinks
+
+        return [i.get_attribute("href") for i in driver.find_elements(By.TAG_NAME, "a")]
 
     def closeWindow(self):
         self.driver.close()
@@ -276,3 +278,17 @@ class SeleniumServices:
         links = self._getLinks(self.driver)
         self.driver.stop_client()
         return links
+
+    def getHomeUrls(self, urlBase: str):
+
+        if urlBase is None or urlBase == "":
+            raise Exception("La url enviada no es válida")
+
+        self.driver.get(urlBase)
+
+        self.scrollPageToFinish(self.driver,
+                                self.driver.find_element(By.XPATH, "/html/body/c-wiz[2]/div/div/div[1]/c-wiz"))
+
+        sendLinks = self._getLinks(self.driver)
+
+        return sendLinks

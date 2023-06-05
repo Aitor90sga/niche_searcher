@@ -27,6 +27,7 @@ class GpUrlBaseModel:
                 getSession().add(temp)
                 sendGpUrl.append(temp)
 
+        #Todo, revisar si esto se puede meter dentro del cloque del if.
         getSession().commit()
 
         return sendGpUrl
@@ -48,6 +49,7 @@ class GpUrlBaseModel:
     def getNextUrlToScan():
         try:
             temp = getSession().query(GpUrlBase).order_by(asc(GpUrlBase.last_scan_date)).limit(1).one()
+            print("Vamos por el: " + str(temp.id))
             temp.last_scan_date = round(datetime.datetime.now().timestamp() * 1000)
             getSession().add(temp)
             getSession().commit()
