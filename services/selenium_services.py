@@ -80,17 +80,17 @@ class SeleniumServices:
 
         # Es el contenido de la sección de "Información de la app"
         h2 = [
+            "/html/body/c-wiz[2]/div/div/div[2]/div[2]/div/div[1]/div[1]/c-wiz[2]/div/section/header/div/div[1]/h2",
             "/html/body/c-wiz[3]/div/div/div[1]/div[2]/div/div[1]/c-wiz[2]/div/section/header/div/div[1]/h2",
             "/html/body/c-wiz[2]/div/div/div[1]/div[2]/div/div[1]/c-wiz[2]/div/section/header/div/div[1]/h2",
-            "/html/body/c-wiz[2]/div/div/div[1]/div[2]/div/div[1]/div[1]/c-wiz[2]/div/section/header/div/div[1]/h2"
+            "/html/body/c-wiz[2]/div/div/div[1]/div[2]/div/div[1]/div[1]/c-wiz[2]/div/section/header/div/div[1]/h2",
         ]
 
         for i in h2:
             try:
                 temp = self.driver.find_element(By.XPATH, i)
-
                 isApp = "aplicación" in str(temp.text).strip().lower()
-
+                break
 
             except Exception as e:
                 pass
@@ -102,6 +102,7 @@ class SeleniumServices:
 
                 # Es el contenedor del listado de categorías
                 catXpaths = [
+                    "/html/body/c-wiz[2]/div/div/div[2]/div[2]/div/div[1]/div[1]/c-wiz[2]/div/section/div/div[3]",
                     "/html/body/c-wiz[2]/div/div/div[1]/div[2]/div/div[1]/div[1]/c-wiz[2]/div/section/div/div[3]",
                     "/html/body/c-wiz[2]/div/div/div[1]/div[2]/div/div[1]/c-wiz[2]/div/section/div/div[3]"
                 ]
@@ -117,6 +118,7 @@ class SeleniumServices:
                         pass
 
             infoButtons = [
+                "/html/body/c-wiz[2]/div/div/div[2]/div[2]/div/div[1]/div[1]/c-wiz[2]/div/section/header/div/div[2]/button",
                 "/html/body/c-wiz[2]/div/div/div[1]/div[2]/div/div[1]/div[1]/c-wiz[2]/div/section/header/div/div[2]/button",
                 "/html/body/c-wiz[2]/div/div/div[1]/div[2]/div/div[1]/c-wiz[2]/div/section/header/div/div[2]/button"
             ]
@@ -148,6 +150,7 @@ class SeleniumServices:
                 return None
 
             dataContainers = [
+                "/html/body/div[4]/div[2]/div/div/div/div[1]/div[2]",
                 "/html/body/div[4]/div[2]/div/div/div/div[2]/div[3]",
                 "/html/body/div[4]/div[2]/div/div/div/div/div[2]/div[3]",
                 "/html/body/div[5]/div[2]/div/div/div/div/div[2]/div[3]",
@@ -191,16 +194,19 @@ class SeleniumServices:
             closeButton.click()
 
             reviewCount = self.driver.find_element(By.XPATH,
-                                                   "/html/body/c-wiz[2]/div/div/div[1]/div[1]/div/div/c-wiz/div[2]/div[2]/div/div/div[1]/div[2]").text.strip()
+                                                   "/html/body/c-wiz[2]/div/div/div[2]/div[1]/div/div/c-wiz/div[2]/div[2]/div/div/div[1]/div[2]").text.strip()
 
-            try:
-                reviewCount = FormatServices.parseReviewCountToNumber(reviewCount)
-            except:
+            if ("descargas" not in reviewCount.lower()):
+                try:
+                    reviewCount = FormatServices.parseReviewCountToNumber(reviewCount)
+                except:
+                    reviewCount = 0
+            else:
                 reviewCount = 0
 
             try:
                 reviewScore = self.driver.find_element(By.XPATH,
-                                                       "/html/body/c-wiz[2]/div/div/div[1]/div[1]/div/div/c-wiz/div[2]/div[2]/div/div/div[1]/div[1]/div/div").text.strip()
+                                                       "/html/body/c-wiz[2]/div/div/div[2]/div[1]/div/div/c-wiz/div[2]/div[2]/div/div/div[1]/div[1]/div/div").text.strip()
             except:
                 reviewScore = ""
 
@@ -213,7 +219,7 @@ class SeleniumServices:
 
             try:
                 temp = self.driver.find_element(By.XPATH,
-                                                "/html/body/c-wiz[2]/div/div/div[1]/div[1]/div/div/div/div[1]/div/c-wiz/div/div/div/div/button")
+                                                "/html/body/c-wiz[2]/div/div/div[2]/div[1]/div/div/div/div[1]/div/c-wiz/div/div/div/div/button")
 
                 if temp is not None and "comprar" in temp.text.lower():
                     isThatPay = True
