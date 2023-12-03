@@ -1,14 +1,12 @@
 from engines.discover_engine.discover_engine import DiscoverEngine
 from engines.evaluate_engine.evaluate_engine import EvaluateEngine
+from engines.sync_engine.sync_engine import SyncEngine
+
 import threading
 
 if __name__ == '__main__':
 
     def startDiscoverEngine():
-        """
-        Esta es la funcionalidad base que nos permite descubrir nuevas aplicaciones que se hayan subido a Google play.
-        :return:
-        """
         DiscoverEngine("es_ES")
 
 
@@ -16,14 +14,23 @@ if __name__ == '__main__':
         EvaluateEngine()
 
 
+    def startSyncEngine():
+        SyncEngine()
+        pass
+
+
     while True:
         print("1) Actualizar URLS")
         print("2) Evaluar nichos")
+        print("3) Sync with server")
 
         result = input("Ingrese una opción:")
 
         if result == "2":
             threading.Thread(target=startEvaluateEngine()).start()
 
-        else:
+        elif result == "1":
             threading.Thread(target=startDiscoverEngine).start()
+
+        elif result == "3":
+            threading.Thread(target=startSyncEngine).start()

@@ -1,16 +1,25 @@
+import chromedriver_autoinstaller
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.common.by import By
 from services.format_services import FormatServices
+import requests
+import wget
+import zipfile
+import os
 
 import pathlib
 import time
+
+from glob import glob
 
 
 class SeleniumServices:
 
     def __init__(self, useEdge=False, lang="es"):
+
+        driverPath = self.downloadWebDriverAuto()
 
         if useEdge is True:
             options = webdriver.EdgeOptions()
@@ -25,9 +34,9 @@ class SeleniumServices:
         # options.add_argument("--lang=" + lang)
 
         if useEdge is True:
-            driver = webdriver.Edge(str(pathlib.Path().resolve()) + "/assets/msedgedriver.exe", options=options)
+            driver = webdriver.Edge(driverPath, options=options)
         else:
-            driver = webdriver.Edge(str(pathlib.Path().resolve()) + "/assets/chromedriver.exe", options=options)
+            driver = webdriver.Edge(driverPath, options=options)
 
         driver.set_window_position(2400, 0)
         driver.maximize_window()
@@ -65,7 +74,7 @@ class SeleniumServices:
 
         return True
 
-    def getCategoricalAppData(self, urlBase: str, getCategories=False):
+    def getCategoricalAppData(self, urlBase: str, getCategories=False, onlyLoad=False):
 
         """
         :param urlBase: La cadena que contiene la URL a analizar
@@ -75,6 +84,17 @@ class SeleniumServices:
             return None
 
         self.driver.get(urlBase)
+
+        if onlyLoad is True:
+            return None
+
+        # Todo, revisar a ver de donde podemos sacar el título de la app
+        title = self.driver.find_elements(By.TAG_NAME, "h1")
+        if len(title) > 0:
+            title = title[0].text
+        else:
+            print("No se ha podido extraer el título: " + urlBase)
+            return None
 
         isApp = True
 
@@ -228,7 +248,8 @@ class SeleniumServices:
 
             # some can be None, check always
             return {"downloads": downloads, "release": release, "review_count": reviewCount,
-                    "review_score": reviewScore, "is_that_pay": isThatPay, "is_app": isApp, "categories": categories}
+                    "review_score": reviewScore, "is_that_pay": isThatPay, "is_app": isApp, "categories": categories,
+                    "app_title": title}
 
         except Exception as e:
             return None
@@ -255,13 +276,33 @@ class SeleniumServices:
 
         return links if links is not None else None
 
+    logos = [
+        "/html/body/c-wiz[2]/div/div/div[2]/div[1]/div/div/c-wiz/div[1]/img[1]",
+        "/html/body/c-wiz[2]/div/div/div[2]/div[1]/div/div/c-wiz/div[2]/div[2]/div/img",
+        "/html/body/c-wiz[2]/div/div/div[1]/div[1]/div/div/c-wiz/div[2]/div[2]/div/img",
+        "/html/body/c-wiz[2]/div/div/div[1]/div[1]/div/div/c-wiz/div[1]/img[1]",
+    ]
+
     def getLogoUrl(self):
-        try:
-            logo = self.driver.find_element(By.XPATH,
-                                            "/html/body/c-wiz[2]/div/div/div[1]/div[1]/div/div/c-wiz/div[2]/div[2]/div/img")
-        except:
-            logo = self.driver.find_element(By.XPATH,
-                                            "/html/body/c-wiz[2]/div/div/div[1]/div[1]/div/div/c-wiz/div[1]/img[1]")
+
+        logo = None
+        index = 0
+
+        for i in self.logos:
+            try:
+                logo = self.driver.find_element(By.XPATH, i)
+                if ".jpg" in logo.get_attribute("src") or ".png" in logo.get_attribute("src"):
+                    continue
+                break
+            except:
+                if index == 0:
+                    index += 1
+                else:
+                    print("Logo no encontrado: " + i)
+
+        if logo is None:
+            return None
+
         logo = logo.get_attribute("src")
         return logo
 
@@ -298,3 +339,46 @@ class SeleniumServices:
         sendLinks = self._getLinks(self.driver)
 
         return sendLinks
+
+    def downloadWebDriverAuto(self):
+
+        """
+        chromedriver_autoinstaller.install()
+        return
+        """
+
+        # get the latest chrome driver version number
+        url = 'https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json'
+        response = requests.get(url)
+        version_number = response.json()
+        version_number = version_number['channels']["Stable"]["downloads"]["chromedriver"]
+        path = ""
+        for i in version_number:
+            if i["platform"] == "win64":
+                path = i["url"]
+
+        if path == "":
+            return
+
+        # build the donwload url
+
+        # download the zip file using the url built above
+        latest_driver_zip = wget.download(path, 'chromedriver.zip')
+
+        try:
+            # extract the zip file
+            with zipfile.ZipFile(latest_driver_zip, 'r') as zip_ref:
+                zip_ref.extractall("assets")  # you can specify the destination folder path here
+            os.remove(latest_driver_zip)
+        except:
+            pass
+
+        item = glob("assets/**/*", recursive=True)
+        for i in item:
+            if "chromedriver.exe" in i:
+                return i
+
+        return ""
+
+
+instance: SeleniumServices = SeleniumServices()

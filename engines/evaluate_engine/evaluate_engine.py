@@ -10,6 +10,7 @@ class EvaluateEngine:
 
     def init(self):
         selServices = SeleniumServices(False)
+        evaluated = 0
 
         while True:
 
@@ -37,9 +38,12 @@ class EvaluateEngine:
 
                 if data["release"] > AppConfig.dataToEvaluate and data["downloads"] > AppConfig.downloadRequired:
                     f = open("niches.txt", "a", encoding="UTF8")
-                    f.write(nextUrl + "\r\n")
+                    f.write(nextUrl + "\n")
                     f.close()
                     print("Nichos actualizados")
+
+                evaluated += 1
+                print("Evaluated: " + str(evaluated) + " " + nextUrl)
 
             except:
                 continue
